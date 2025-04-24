@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบลงทะเบียนอบรม (ตัวอย่าง)</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
+</head>
+
+<body class="bg-blue-50 min-h-screen flex flex-col justify-between">
+  <header class="text-center p-6">
+    <img src="https://waiwai-it.com/images/waiwaijaideelogo.png" alt="Waiwai Logo" class="mx-auto h-24">
+    <h1 class="text-2xl font-bold text-blue-800 mt-2">ระบบลงทะเบียนอบรม (ตัวอย่าง)</h1>
+  </header>
+
+  <main class="container mx-auto p-4">
+    <!-- Dashboard -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-white mb-6">
+      <div class="bg-blue-700 rounded-xl p-6 text-center">
+        <div class="text-xl font-bold">จำนวนทั้งหมด</div>
+        <div class="text-3xl font-bold" id="totalCount">0</div>
+      </div>
+      <div class="bg-green-600 rounded-xl p-6 text-center">
+        <div class="text-xl font-bold">อนุมัติแล้ว</div>
+        <div class="text-3xl font-bold" id="approvedCount">0</div>
+      </div>
+      <div class="bg-yellow-500 rounded-xl p-6 text-center">
+        <div class="text-xl font-bold">รอตรวจสอบ</div>
+        <div class="text-3xl font-bold" id="pendingCount">0</div>
+      </div>
+    </div>
+
+    <!-- Register Button -->
+    <div class="flex justify-end mb-4">
+      <button id="registerBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">ลงทะเบียน</button>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto bg-white rounded-xl shadow p-4">
+      <table class="min-w-full table-auto" id="registerTable">
+        <thead class="bg-blue-100 text-blue-800">
+          <tr>
+            <th class="px-4 py-2">ชื่อ-นามสกุล</th>
+            <th class="px-4 py-2">Email</th>
+            <th class="px-4 py-2">เบอร์โทร</th>
+            <th class="px-4 py-2">บทบาท</th>
+            <th class="px-4 py-2">สถานะ</th>
+            <th class="px-4 py-2">ดูข้อมูล</th>
+          </tr>
+        </thead>
+        <tbody class="text-center" id="tableBody">
+          <!-- Filled by JS -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-6 bg-blue-100 text-blue-700">
+    <p>Developer ไวไว ใจดี | Waiwai-iT<br>
+    © 2025-2026 All Rights Reserved</p>
+  </footer>
+
+  <!-- Modal -->
+  <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+    <div class="bg-white p-6 rounded-xl w-11/12 md:w-1/2">
+      <h2 class="text-xl font-bold mb-4 text-blue-800">ลงทะเบียน</h2>
+      <form id="registerForm">
+        <input type="text" name="name" placeholder="ชื่อ-นามสกุล" class="w-full border p-2 mb-2 rounded" required>
+        <input type="email" name="email" placeholder="Email" class="w-full border p-2 mb-2 rounded" required>
+        <input type="text" name="phonenumber" placeholder="เบอร์โทร" class="w-full border p-2 mb-2 rounded" required>
+        <select name="role" class="w-full border p-2 mb-2 rounded">
+          <option value="Teacher">ครู</option>
+          <option value="Admin">ผู้ดูแลระบบ</option>
+        </select>
+        <input type="hidden" name="status" value="Pending">
+        <div class="flex justify-end gap-2">
+          <button type="button" class="bg-gray-400 text-white px-4 py-2 rounded" onclick="closeModal()">ยกเลิก</button>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxATtqpwEr3kYv5QzFsChaxqzHePlyZWPBhTvmDlAMa8SBXrbAMPqs3JRyd_yqv5YtuQw/exec";
+    const TOKEN = "GuruChian_secure_token_20250424"; // ตั้งค่าจาก server หรือระบบ login
+  
+    function fetchData() {
+      $.LoadingOverlay("show");
+      $.get(API_URL, { action: "findAllRegister", token: TOKEN }, function (responseRaw) {
+        let response;
+        try {
+          response = typeof responseRaw === "string" ? JSON.parse(responseRaw) : responseRaw;
+        } catch (e) {
+          Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถแปลงข้อมูล JSON ได้", "error");
+          $.LoadingOverlay("hide");
+          return;
+        }
+  
+        if (response.success) {
+          const data = response.data || [];
+          const safe = (val) => val ? val : "-";
+  
+          $("#totalCount").text(data.length);
+          $("#approvedCount").text(data.filter(u => u.Status === "Active").length);
+          $("#pendingCount").text(data.filter(u => u.Status === "Pending").length);
+  
+          if (data.length === 0) {
+            $("#tableBody").html(`<tr><td colspan="6" class="text-center py-4">ไม่มีข้อมูล</td></tr>`);
+          } else {
+            const tableBody = data.map((user, index) => `
+              <tr class="border-b">
+                <td class="px-4 py-2">${safe(user.Name)}</td>
+                <td class="px-4 py-2">${safe(user.email)}</td>
+                <td class="px-4 py-2">${safe(user["Phone Number"])}</td>
+                <td class="px-4 py-2">${safe(user.Role)}</td>
+                <td class="px-4 py-2">${safe(user.Status)}</td>
+                <td class="px-4 py-2">
+                  <button class="text-blue-600 hover:underline" onclick="showUserDetails(${index})">ดู</button>
+                </td>
+              </tr>`).join("");
+            $("#tableBody").html(tableBody);
+          }
+          window.usersData = data;
+        } else {
+          Swal.fire("เกิดข้อผิดพลาด", response.message, "error");
+        }
+  
+        $.LoadingOverlay("hide");
+      });
+    }
+  
+    function showUserDetails(index) {
+      const user = window.usersData[index];
+      Swal.fire({
+        title: "ข้อมูลผู้ลงทะเบียน",
+        html: `<strong>ชื่อ:</strong> ${user.Name}<br>
+              <strong>Email:</strong> ${user.email}<br>
+              <strong>เบอร์:</strong> ${user["Phone Number"]}<br>
+              <strong>บทบาท:</strong> ${user.Role}<br>
+              <strong>สถานะ:</strong> ${user.Status}`
+      });
+    }
+  
+    function closeModal() {
+      $("#registerModal").addClass("hidden");
+    }
+  
+    $(document).ready(function () {
+      fetchData();
+  
+      $("#registerBtn").on("click", () => {
+        $("#registerModal").removeClass("hidden");
+      });
+  
+      $("#registerForm").validate({
+        submitHandler: function (form) {
+          const formData = Object.fromEntries(new FormData(form));
+          formData.action = "saveData";
+          formData.token = TOKEN;
+  
+          $.LoadingOverlay("show");
+          fetch(API_URL, {
+            method: "POST",
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(formData)
+          })
+            .then(res => res.text())
+            .then((result) => {
+              closeModal();
+              fetchData();
+              Swal.fire("สำเร็จ!", "บันทึกข้อมูลเรียบร้อยแล้ว", "success");
+            })
+            .catch(() => Swal.fire("ผิดพลาด", "ไม่สามารถบันทึกได้", "error"))
+            .finally(() => $.LoadingOverlay("hide"));
+        }
+      });
+    });
+  </script>
+  
+</body>
+
+</html>
