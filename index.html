@@ -88,67 +88,124 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxATtqpwEr3kYv5QzFsChaxqzHePlyZWPBhTvmDlAMa8SBXrbAMPqs3JRyd_yqv5YtuQw/exec";
-    const TOKEN = "GuruChian_secure_token_20250424"; // ตั้งค่าจาก server หรือระบบ login
+//     const API_URL = "https://script.google.com/macros/s/AKfycbxATtqpwEr3kYv5QzFsChaxqzHePlyZWPBhTvmDlAMa8SBXrbAMPqs3JRyd_yqv5YtuQw/exec";
+//     const TOKEN = "GuruChian_secure_token_20250424"; // ตั้งค่าจาก server หรือระบบ login
 
+const API_URL = "https://script.google.com/macros/s/AKfycbxATtqpwEr3kYv5QzFsChaxqzHePlyZWPBhTvmDlAMa8SBXrbAMPqs3JRyd_yqv5YtuQw/exec";
+const TOKEN = "GuruChian_secure_token_20250424"; // ตั้งค่าจาก server หรือระบบ login
 
-    function fetchData() {
+async function fetchData() {
   $.LoadingOverlay("show");
 
-  $.ajax({
-    url: API_URL,
-    method: "GET",
-    data: { action: "findAllRegister", token: TOKEN },
-    xhrFields: { withCredentials: false },
-    success: function (responseRaw) {
-      let response;
-      try {
-        response = typeof responseRaw === "string" ? JSON.parse(responseRaw) : responseRaw;
-      } catch (e) {
-        Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถแปลงข้อมูล JSON ได้", "error");
-        $.LoadingOverlay("hide");
-        return;
+  try {
+    const response = await axios.get(API_URL, {
+      params: {
+        action: "findAllRegister",
+        token: TOKEN
       }
+    });
 
-      if (response.success) {
-        const data = response.data || [];
-        const safe = (val) => val ? val : "-";
-
-        $("#totalCount").text(data.length);
-        $("#approvedCount").text(data.filter(u => u.Status === "Active").length);
-        $("#pendingCount").text(data.filter(u => u.Status === "Pending").length);
-
-        if (data.length === 0) {
-          $("#tableBody").html(`<tr><td colspan="6" class="text-center py-4">ไม่มีข้อมูล</td></tr>`);
-        } else {
-          const tableBody = data.map((user, index) => `
-            <tr class="border-b">
-              <td class="px-4 py-2">${safe(user.Name)}</td>
-              <td class="px-4 py-2">${safe(user.Email)}</td>
-              <td class="px-4 py-2">${safe(user["Phone Number"])}</td>
-              <td class="px-4 py-2">${safe(user.Role)}</td>
-              <td class="px-4 py-2">${safe(user.Status)}</td>
-              <td class="px-4 py-2">
-                <button class="text-blue-600 hover:underline" onclick="showUserDetails(${index})">ดู</button>
-              </td>
-            </tr>`).join("");
-
-          $("#tableBody").html(tableBody);
-        }
-
-        window.usersData = data;
-      } else {
-        Swal.fire("เกิดข้อผิดพลาด", response.message, "error");
-      }
-
-      $.LoadingOverlay("hide");
-    },
-    error: function () {
-      Swal.fire("ข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", "error");
-      $.LoadingOverlay("hide");
+    let dataResponse = response.data;
+    if (typeof dataResponse === "string") {
+      dataResponse = JSON.parse(dataResponse);
     }
-  });
+
+    if (dataResponse.success) {
+      const data = dataResponse.data || [];
+      const safe = (val) => val ? val : "-";
+
+      $("#totalCount").text(data.length);
+      $("#approvedCount").text(data.filter(u => u.Status === "Active").length);
+      $("#pendingCount").text(data.filter(u => u.Status === "Pending").length);
+
+      if (data.length === 0) {
+        $("#tableBody").html(`<tr><td colspan="6" class="text-center py-4">ไม่มีข้อมูล</td></tr>`);
+      } else {
+        const tableBody = data.map((user, index) => `
+          <tr class="border-b">
+            <td class="px-4 py-2">${safe(user.Name)}</td>
+            <td class="px-4 py-2">${safe(user.Email)}</td>
+            <td class="px-4 py-2">${safe(user["Phone Number"])}</td>
+            <td class="px-4 py-2">${safe(user.Role)}</td>
+            <td class="px-4 py-2">${safe(user.Status)}</td>
+            <td class="px-4 py-2">
+              <button class="text-blue-600 hover:underline" onclick="showUserDetails(${index})">ดู</button>
+            </td>
+          </tr>`).join("");
+
+        $("#tableBody").html(tableBody);
+      }
+
+      window.usersData = data;
+    } else {
+      Swal.fire("เกิดข้อผิดพลาด", dataResponse.message, "error");
+    }
+
+  } catch (error) {
+    console.error(error);
+    Swal.fire("ข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", "error");
+  } finally {
+    $.LoadingOverlay("hide");
+  }
 }
+
+//     function fetchData() {
+//   $.LoadingOverlay("show");
+
+//   $.ajax({
+//     url: API_URL,
+//     method: "GET",
+//     data: { action: "findAllRegister", token: TOKEN },
+//     xhrFields: { withCredentials: false },
+//     success: function (responseRaw) {
+//       let response;
+//       try {
+//         response = typeof responseRaw === "string" ? JSON.parse(responseRaw) : responseRaw;
+//       } catch (e) {
+//         Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถแปลงข้อมูล JSON ได้", "error");
+//         $.LoadingOverlay("hide");
+//         return;
+//       }
+
+//       if (response.success) {
+//         const data = response.data || [];
+//         const safe = (val) => val ? val : "-";
+
+//         $("#totalCount").text(data.length);
+//         $("#approvedCount").text(data.filter(u => u.Status === "Active").length);
+//         $("#pendingCount").text(data.filter(u => u.Status === "Pending").length);
+
+//         if (data.length === 0) {
+//           $("#tableBody").html(`<tr><td colspan="6" class="text-center py-4">ไม่มีข้อมูล</td></tr>`);
+//         } else {
+//           const tableBody = data.map((user, index) => `
+//             <tr class="border-b">
+//               <td class="px-4 py-2">${safe(user.Name)}</td>
+//               <td class="px-4 py-2">${safe(user.Email)}</td>
+//               <td class="px-4 py-2">${safe(user["Phone Number"])}</td>
+//               <td class="px-4 py-2">${safe(user.Role)}</td>
+//               <td class="px-4 py-2">${safe(user.Status)}</td>
+//               <td class="px-4 py-2">
+//                 <button class="text-blue-600 hover:underline" onclick="showUserDetails(${index})">ดู</button>
+//               </td>
+//             </tr>`).join("");
+
+//           $("#tableBody").html(tableBody);
+//         }
+
+//         window.usersData = data;
+//       } else {
+//         Swal.fire("เกิดข้อผิดพลาด", response.message, "error");
+//       }
+
+//       $.LoadingOverlay("hide");
+//     },
+//     error: function () {
+//       Swal.fire("ข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", "error");
+//       $.LoadingOverlay("hide");
+//     }
+//   });
+// }
 
 
 //     function fetchData() {
