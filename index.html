@@ -10,6 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
+  
 </head>
 
 <body class="bg-blue-50 min-h-screen flex flex-col justify-between">
@@ -88,9 +89,6 @@
   </div>
 
   <script>
-//     const API_URL = "https://script.google.com/macros/s/AKfycbxATtqpwEr3kYv5QzFsChaxqzHePlyZWPBhTvmDlAMa8SBXrbAMPqs3JRyd_yqv5YtuQw/exec";
-//     const TOKEN = "GuruChian_secure_token_20250424"; // ตั้งค่าจาก server หรือระบบ login
-
 const API_URL = "https://script.google.com/macros/s/AKfycbxATtqpwEr3kYv5QzFsChaxqzHePlyZWPBhTvmDlAMa8SBXrbAMPqs3JRyd_yqv5YtuQw/exec";
 const TOKEN = "GuruChian_secure_token_20250424"; // ตั้งค่าจาก server หรือระบบ login
 
@@ -148,6 +146,69 @@ async function fetchData() {
     $.LoadingOverlay("hide");
   }
 }
+
+
+    
+//     const API_URL = "https://script.google.com/macros/s/AKfycbxATtqpwEr3kYv5QzFsChaxqzHePlyZWPBhTvmDlAMa8SBXrbAMPqs3JRyd_yqv5YtuQw/exec";
+//     const TOKEN = "GuruChian_secure_token_20250424"; // ตั้งค่าจาก server หรือระบบ login
+
+// const API_URL = "https://script.google.com/macros/s/AKfycbxATtqpwEr3kYv5QzFsChaxqzHePlyZWPBhTvmDlAMa8SBXrbAMPqs3JRyd_yqv5YtuQw/exec";
+// const TOKEN = "GuruChian_secure_token_20250424"; // ตั้งค่าจาก server หรือระบบ login
+
+// async function fetchData() {
+//   $.LoadingOverlay("show");
+
+//   try {
+//     const response = await axios.get(API_URL, {
+//       params: {
+//         action: "findAllRegister",
+//         token: TOKEN
+//       }
+//     });
+
+//     let dataResponse = response.data;
+//     if (typeof dataResponse === "string") {
+//       dataResponse = JSON.parse(dataResponse);
+//     }
+
+//     if (dataResponse.success) {
+//       const data = dataResponse.data || [];
+//       const safe = (val) => val ? val : "-";
+
+//       $("#totalCount").text(data.length);
+//       $("#approvedCount").text(data.filter(u => u.Status === "Active").length);
+//       $("#pendingCount").text(data.filter(u => u.Status === "Pending").length);
+
+//       if (data.length === 0) {
+//         $("#tableBody").html(`<tr><td colspan="6" class="text-center py-4">ไม่มีข้อมูล</td></tr>`);
+//       } else {
+//         const tableBody = data.map((user, index) => `
+//           <tr class="border-b">
+//             <td class="px-4 py-2">${safe(user.Name)}</td>
+//             <td class="px-4 py-2">${safe(user.Email)}</td>
+//             <td class="px-4 py-2">${safe(user["Phone Number"])}</td>
+//             <td class="px-4 py-2">${safe(user.Role)}</td>
+//             <td class="px-4 py-2">${safe(user.Status)}</td>
+//             <td class="px-4 py-2">
+//               <button class="text-blue-600 hover:underline" onclick="showUserDetails(${index})">ดู</button>
+//             </td>
+//           </tr>`).join("");
+
+//         $("#tableBody").html(tableBody);
+//       }
+
+//       window.usersData = data;
+//     } else {
+//       Swal.fire("เกิดข้อผิดพลาด", dataResponse.message, "error");
+//     }
+
+//   } catch (error) {
+//     console.error(error);
+//     Swal.fire("ข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", "error");
+//   } finally {
+//     $.LoadingOverlay("hide");
+//   }
+// }
 
 //     function fetchData() {
 //   $.LoadingOverlay("show");
